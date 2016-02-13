@@ -15,6 +15,7 @@
  */
 package org.xbmc.kore.ui;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -23,7 +24,9 @@ import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
 
 import org.xbmc.kore.R;
 import org.xbmc.kore.Settings;
@@ -38,8 +41,8 @@ import java.lang.reflect.Method;
  */
 public class SettingsFragment extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener {
-
     private static final String TAG = LogUtils.makeLogTag(SettingsFragment.class);
+    private static final int MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 72873;
 
     private int hostId;
 
@@ -104,6 +107,19 @@ public class SettingsFragment extends PreferenceFragment
                             .addNextIntent(new Intent(getActivity(), RemoteActivity.class))
                             .addNextIntent(new Intent(getActivity(), SettingsActivity.class))
                             .startActivities();
+        } else if (key.equals(Settings.KEY_PREF_PAUSE_DURING_CALLS)) {
+            boolean shouldPause = sharedPreferences
+                    .getBoolean(Settings.KEY_PREF_USE_HARDWARE_VOLUME_KEYS,
+                            Settings.DEFAULT_PREF_USE_HARDWARE_VOLUME_KEYS);
+            if (shouldPause) {
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_STATE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // No explanation needed, we can request the permission.
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.READ_PHONE_STATE},
+                            MY_PERMISSIONS_REQUEST_READ_PHONE_STATE);
+                }
+            }
         }
     }
 

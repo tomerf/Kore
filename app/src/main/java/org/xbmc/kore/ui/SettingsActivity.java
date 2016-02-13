@@ -16,8 +16,10 @@
 package org.xbmc.kore.ui;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -31,8 +33,10 @@ import org.xbmc.kore.utils.UIUtils;
 /**
  * Presents the Preferences fragment
  */
-public class SettingsActivity extends ActionBarActivity{
+public class SettingsActivity extends ActionBarActivity
+        implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String TAG = LogUtils.makeLogTag(SettingsActivity.class);
+    private static final int MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 72873;
 
     private SettingsFragment settingsFragment;
 
@@ -68,5 +72,22 @@ public class SettingsActivity extends ActionBarActivity{
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_PHONE_STATE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length == 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    // Failed to get permission, reset preference to default (false)
+                    PreferenceManager
+                            .getDefaultSharedPreferences(this)
+                            .edit().remove(Settings.KEY_PREF_PAUSE_DURING_CALLS).commit();
+                }
+            }
+        }
     }
 }
